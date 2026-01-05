@@ -1,4 +1,6 @@
 import { StatTile } from "@/widgets/dashboard/ui/stat-tile";
+import { StatusDistributionChart } from "@/widgets/dashboard/ui/status-distribution-chart";
+import { ThroughputChart } from "@/widgets/dashboard/ui/throughput-chart";
 
 async function getStats() {
   try {
@@ -27,26 +29,34 @@ export default async function Home() {
         </p>
       </div>
 
-      <main className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <StatTile 
-          count={stats.activeCount || 0} 
+      {/* Stats tiles */}
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <StatTile
+          count={stats.activeCount || 0}
           error={stats.error}
           label={['Активная задача', 'Активные задачи', 'Активных задач']}
           href={stats.activeUrl}
         />
-        <StatTile 
-          count={stats.unassignedCount || 0} 
+        <StatTile
+          count={stats.unassignedCount || 0}
           error={stats.error}
           label={['Неназначенная задача', 'Неназначенные задачи', 'Неназначенных задач']}
           href={stats.unassignedUrl}
         />
-        <StatTile 
-          count={stats.reviewCount || 0} 
+        <StatTile
+          count={stats.reviewCount || 0}
           error={stats.error}
           label={['На ревью', 'На ревью', 'На ревью']}
           href={stats.reviewUrl}
         />
-      </main>
+      </section>
+
+      {/* Kanban charts */}
+      <section className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <StatusDistributionChart />
+        <ThroughputChart />
+      </section>
     </div>
   );
 }
+

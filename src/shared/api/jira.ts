@@ -119,3 +119,157 @@ export async function getIssueWorklogs(issueKey: string): Promise<Worklog[]> {
     return []; // Return empty array on error
   }
 }
+
+// ============ AGILE API ============
+
+export interface Board {
+  id: number;
+  name: string;
+  type: 'scrum' | 'kanban' | 'simple';
+  location?: {
+    projectId?: number;
+    projectKey?: string;
+    projectName?: string;
+  };
+}
+
+export interface Sprint {
+  id: number;
+  name: string;
+  state: 'future' | 'active' | 'closed';
+  startDate?: string;
+  endDate?: string;
+  completeDate?: string;
+  goal?: string;
+}
+
+export interface SprintReport {
+  sprint: Sprint;
+  completedIssues: JiraIssue[];
+  incompletedIssues: JiraIssue[];
+  puntedIssues: JiraIssue[];
+}
+
+/**
+ * Get all boards (optionally filtered by project)
+ */
+export async function getBoards(projectKeyOrId?: string): Promise<Board[]> {
+  try {
+    const params = new URLSearchParams();
+    params.set('maxResults', '50');
+    if (projectKeyOrId) {
+      params.set('projectKeyOrId', projectKeyOrId);
+    }
+
+    const { data } = await axiosClient.get(`/rest/agile/1.0/board?${params.toString()}`);
+    return data.values || [];
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error('Jira Boards API Error:', error.response?.status, error.response?.data);
+    }
+    return [];
+  }
+}
+
+/**
+ * Find a Scrum board for the project
+ */
+export async function findScrumBoard(projectKey: string): Promise<Board | null> {
+  const boards = await getBoards(projectKey);
+  return boards.find((b) => b.type === 'scrum') || null;
+}
+
+/**
+ * Get all sprints for a board
+ */
+export async function getSprints(boardId: number, state?: 'future' | 'active' | 'closed'): Promise<Sprint[]> {
+  try {
+    const params = new URLSearchParams();
+    if (state) params.set('state', state);
+    params.set('maxResults', '50');
+
+    const { data } = await axiosClient.get(`/rest/agile/1.0/board/${boardId}/sprint?${params.toString()}`);
+    return data.values || [];
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error('Jira Agile API Error:', error.response?.status, error.response?.data);
+    }
+    return [];
+  }
+}
+
+/**
+ * Get issues for a specific sprint
+ */
+export async function getSprintIssues(sprintId: number): Promise<JiraIssue[]> {
+  try {
+    const { data } = await axiosClient.get(`/rest/agile/1.0/sprint/${sprintId}/issue`, {
+      params: { maxResults: 200, fields: 'summary,status,assignee,issuetype,customfield_10016' },
+    });
+    return data.issues || [];
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error('Jira Sprint Issues API Error:', error.response?.status, error.response?.data);
+    }
+    return [];
+  }
+}
+
+/**
+ * Get sprint report (velocity data)
+ */
+export async function getSprintReport(boardId: number, sprintId: number): Promise<SprintReport | null> {
+  try {
+    const { data } = await axiosClient.get(`/rest/greenhopper/1.0/rapid/charts/sprintreport`, {
+      params: { rapidViewId: boardId, sprintId },
+    });
+
+    const sprint: Sprint = {
+      id: data.sprint.id,
+      name: data.sprint.name,
+      state: data.sprint.state?.toLowerCase() || 'closed',
+      startDate: data.sprint.startDate,
+      endDate: data.sprint.endDate,
+      completeDate: data.sprint.completeDate,
+    };
+
+    return {
+      sprint,
+      completedIssues: data.contents?.completedIssues || [],
+      incompletedIssues: data.contents?.issuesNotCompletedInCurrentSprint || [],
+      puntedIssues: data.contents?.puntedIssues || [],
+    };
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error('Jira Sprint Report API Error:', error.response?.status, error.response?.data);
+    }
+    return null;
+  }
+}
+
+/**
+ * Get burndown chart data for a sprint
+ */
+export async function getBurndownData(boardId: number, sprintId: number): Promise<{
+  startTime: number;
+  endTime: number;
+  changes: Array<{ time: number; value: number }>;
+} | null> {
+  try {
+    const { data } = await axiosClient.get(`/rest/greenhopper/1.0/rapid/charts/scopechangeburndownchart`, {
+      params: { rapidViewId: boardId, sprintId },
+    });
+
+    return {
+      startTime: data.startTime,
+      endTime: data.endTime,
+      changes: data.changes || [],
+    };
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error('Jira Burndown API Error:', error.response?.status, error.response?.data);
+    }
+    return null;
+  }
+}
+
