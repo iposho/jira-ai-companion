@@ -1,0 +1,71 @@
+# Правила для AI-помощников
+
+## Язык
+- Отвечай на языке пользователя, если нет явного запроса на другой язык
+- Комментарии в коде — на русском
+- Имена переменных, функций, компонентов — на английском
+
+## Архитектура — Feature Sliced Design
+
+Проект использует FSD. Соблюдай слои:
+- `app/` — роуты, layouts, глобальные провайдеры
+- `widgets/` — крупные UI-блоки (Sidebar, Dashboard)
+- `features/` — бизнес-логика по фичам
+- `shared/` — переиспользуемый код (ui, lib, api, config)
+
+### Импорты
+```typescript
+// ✅ Правильно — публичный API через index.ts
+import { Button } from '@/shared/ui'
+import { cn } from '@/shared/lib'
+
+// ❌ Неправильно — прямой импорт внутренностей
+import { Button } from '@/shared/ui/button/Button'
+```
+
+## Стиль кода
+
+### TypeScript
+- Строгий режим, без `any`
+- Интерфейсы для props, типы для unions
+- `type Props = { ... }` перед компонентом
+
+### React
+- Функциональные компоненты с arrow functions
+- `'use client'` только где реально нужен клиентский код
+- Именование: `ComponentName.tsx`, `use-hook-name.ts`
+
+### Tailwind CSS 4
+- Используй CSS переменные через `globals.css`
+- Утилита `cn()` для условных классов
+
+## Commit Messages
+
+Формат: `<тип>(<область>): <описание>`
+
+Типы:
+- `feat` — новая функциональность
+- `fix` — исправление бага
+- `refactor` — рефакторинг без изменения поведения
+- `docs` — документация
+- `style` — форматирование, без изменения логики
+- `chore` — рутина (зависимости, конфиги)
+
+Примеры:
+```
+feat(dashboard): добавить график velocity
+fix(auth): исправить редирект после логина
+refactor(reports): выделить логику форматирования в утилиту
+```
+
+## API Routes
+
+- Файлы: `src/app/api/<endpoint>/route.ts`
+- Использовать `NextRequest` / `NextResponse`
+- Обработка ошибок через try-catch с JSON-ответом
+
+## Важные файлы
+
+- `.env.example` — шаблон переменных окружения
+- `src/shared/api/` — клиенты Jira, Supabase, LLM
+- `src/shared/config/env.ts` — типизированные env-переменные

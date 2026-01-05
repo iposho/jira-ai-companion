@@ -44,3 +44,6 @@ next-env.d.ts
 
 # history
 .history
+
+# PM2 logs
+/logs

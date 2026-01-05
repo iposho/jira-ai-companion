@@ -17,7 +17,12 @@ export const JIRA_CONSTANTS = {
         'К выполнению'
     ],
     REVIEW_STATUSES: [
-        'Review'
+        'Review',
+        'Проверка',
+        'Code Review',
+        'In Review',
+        'На ревью',
+        'Ревью'
     ]
 };
 

@@ -1,36 +1,126 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🤖 Jira AI Companion
 
-## Getting Started
+> Интеллектуальный помощник для работы с Jira — аналитика, отчёты и AI-инсайты
 
-First, run the development server:
+## ✨ Возможности
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- 📊 **Kanban-аналитика** — распределение по статусам, пропускная способность, WIP
+- 📈 **Velocity & Burndown** — графики скорости команды и сгорания задач
+- 📝 **AI-отчёты** — автоматическая генерация отчётов с помощью LLM
+- 🔍 **Умный поиск** — поиск задач по проектам с фильтрацией
+- 🎨 **Современный UI** — тёмная/светлая тема, адаптивный дизайн
+
+## 🛠️ Технологии
+
+| Категория | Технологии |
+|-----------|------------|
+| **Frontend** | Next.js 16, React 19, TypeScript |
+| **Styling** | Tailwind CSS 4, CSS Variables |
+| **Backend** | Next.js API Routes, Supabase |
+| **Integrations** | Jira REST API, Groq LLM |
+| **Architecture** | Feature Sliced Design |
+
+## 📁 Структура проекта (FSD)
+
+```
+src/
+├── app/              # Next.js App Router (pages, layouts, api)
+│   ├── api/          # API endpoints (kanban-stats, reports, sprints)
+│   ├── reports/      # Страница отчётов
+│   └── login/        # Страница авторизации
+├── features/         # Бизнес-логика по фичам
+│   ├── auth/         # Авторизация
+│   ├── reports/      # Генерация отчётов
+│   └── theme/        # Управление темой
+├── widgets/          # Составные UI-блоки
+│   ├── dashboard/    # Графики и карточки дашборда
+│   ├── sidebar/      # Боковое меню
+│   └── app-shell/    # Обёртка приложения
+└── shared/           # Переиспользуемый код
+    ├── api/          # Клиенты API (Jira, Supabase, LLM)
+    ├── ui/           # UI-компоненты (Button, Card, Modal)
+    ├── lib/          # Утилиты (cn, форматирование)
+    └── config/       # Конфигурация (env, константы)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Быстрый старт
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Требования
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Node.js 20+
+- npm/yarn/pnpm
+- Аккаунт Jira с API токеном
+- Проект Supabase (опционально)
+- API ключ Groq (для AI-фич)
 
-## Learn More
+### Установка
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Клонируем репозиторий
+git clone https://github.com/your-username/jira-ai-companion.git
+cd jira-ai-companion
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Устанавливаем зависимости
+npm install
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Копируем переменные окружения
+cp .env.example .env
 
-## Deploy on Vercel
+# Заполняем .env своими данными
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Переменные окружения
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+# Jira Configuration
+JIRA_HOST=https://your-company.atlassian.net
+JIRA_EMAIL=your-email@company.com
+JIRA_API_TOKEN=your-jira-api-token
+JIRA_BOARD_ID=123
+JIRA_DEFAULT_PROJECT=DEV
+
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# Groq (для LLM)
+GROQ_API_KEY=gsk_xxxxx
+```
+
+### Запуск
+
+```bash
+# Режим разработки
+npm run dev
+
+# Продакшн билд
+npm run build && npm start
+
+# Линтинг
+npm run lint
+```
+
+Открыть [http://localhost:3000](http://localhost:3000)
+
+## 📚 Документация
+
+- [Настройка Supabase](./docs/supabase-setup.md)
+- [TODO & Roadmap](./TODO.md)
+
+## 🤝 Разработка
+
+### Правила кода
+
+- Использовать **Feature Sliced Design** архитектуру
+- TypeScript **strict mode**
+- Именование: `camelCase` для переменных, `PascalCase` для компонентов
+- Комментарии на русском, код на английском
+
+### Git Hooks (Husky)
+
+Проект использует Husky для pre-commit хуков с линтингом.
+
+## 📄 Лицензия
+
+MIT
