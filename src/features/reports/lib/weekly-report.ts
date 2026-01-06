@@ -14,15 +14,27 @@ export async function generateWeeklyReport(
     const projectKey = filters?.projectKey || JIRA_CONSTANTS.PROJECT_KEY;
     const jiraHost = process.env.JIRA_HOST?.replace(/\/$/, '');
 
-    // Last 7 days
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    weekAgo.setHours(0, 0, 0, 0);
-    const now = new Date();
+    // Use filters dateFrom/dateTo if provided, otherwise use week ago
+    let weekAgo: Date;
+    let now: Date;
+    
+    if (filters?.dateFrom) {
+        weekAgo = new Date(filters.dateFrom);
+        weekAgo.setHours(0, 0, 0, 0);
+        now = filters?.dateTo ? new Date(filters.dateTo) : new Date();
+        now.setHours(23, 59, 59, 999);
+    } else {
+        // Default: week ago
+        weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        weekAgo.setHours(0, 0, 0, 0);
+        now = new Date();
+        now.setHours(23, 59, 59, 999);
+    }
 
     onProgress(10, 'Загрузка задач...');
 
-    const jql = `project = ${projectKey} AND assignee in ("${users.join('", "')}") AND updated >= -7d`;
+    const jql = `project = ${projectKey} AND assignee IN ("${users.join('", "')}") AND updated >= -7d`;
     const tasks = await getAllIssues(jql);
 
     onProgress(30, 'Анализ статистики...');

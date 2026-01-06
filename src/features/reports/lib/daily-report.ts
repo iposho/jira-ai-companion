@@ -28,12 +28,23 @@ export async function generateDailyReport(
     const projectKey = filters?.projectKey || JIRA_CONSTANTS.PROJECT_KEY;
     const jiraHost = process.env.JIRA_HOST?.replace(/\/$/, '');
 
-    // Yesterday's date range
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    yesterday.setHours(0, 0, 0, 0);
-    const yesterdayEnd = new Date(yesterday);
-    yesterdayEnd.setHours(23, 59, 59, 999);
+    // Use filters dateFrom/dateTo if provided, otherwise use yesterday
+    let yesterday: Date;
+    let yesterdayEnd: Date;
+    
+    if (filters?.dateFrom) {
+        yesterday = new Date(filters.dateFrom);
+        yesterday.setHours(0, 0, 0, 0);
+        yesterdayEnd = filters?.dateTo ? new Date(filters.dateTo) : new Date(yesterday);
+        yesterdayEnd.setHours(23, 59, 59, 999);
+    } else {
+        // Default: yesterday
+        yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        yesterday.setHours(0, 0, 0, 0);
+        yesterdayEnd = new Date(yesterday);
+        yesterdayEnd.setHours(23, 59, 59, 999);
+    }
 
     const activities: DailyActivity[] = [];
 
@@ -44,7 +55,7 @@ export async function generateDailyReport(
         progressStep++;
         onProgress((progressStep / totalSteps) * 80, `Анализ ${userEmail}...`);
 
-        const jql = `project = "${projectKey}" AND assignee = "${userEmail}"`;
+        const jql = `project = ${projectKey} AND assignee = "${userEmail}"`;
         const tasks = await getAllIssues(jql);
 
         const userName = tasks.length > 0 && tasks[0].fields.assignee

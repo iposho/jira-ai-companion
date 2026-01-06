@@ -113,12 +113,17 @@ export function ReportCard({ report }: ReportCardProps) {
                 </div>
             </div>
 
-            <ReportFiltersModal
-                isOpen={showFiltersModal}
-                reportTitle={report.title}
-                onClose={() => setShowFiltersModal(false)}
-                onConfirm={handleGenerate}
-            />
+            {/* Используем key для пересоздания компонента при каждом открытии */}
+            {showFiltersModal && (
+                <ReportFiltersModal
+                    key={`${report.id}-${Date.now()}`}
+                    isOpen={showFiltersModal}
+                    reportTitle={report.title}
+                    reportType={report.id}
+                    onClose={() => setShowFiltersModal(false)}
+                    onConfirm={handleGenerate}
+                />
+            )}
         </>
     );
 }

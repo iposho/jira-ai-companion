@@ -17,7 +17,10 @@ export async function generatePlanningReport(
     onProgress(10, 'Загрузка задач...');
 
     // Get all active tasks for users
-    const jql = `project = ${projectKey} AND assignee in ("${users.join('", "')}") AND status not in ("${JIRA_CONSTANTS.STATUS_EXCLUSIONS.join('", "')}")`;
+    const statusExclusionsFormatted = JIRA_CONSTANTS.STATUS_EXCLUSIONS.map(s => 
+        s.includes(' ') || s.includes('-') ? `"${s}"` : s
+    ).join(', ');
+    const jql = `project = ${projectKey} AND assignee IN ("${users.join('", "')}") AND status NOT IN (${statusExclusionsFormatted})`;
     const tasks = await getAllIssues(jql);
 
     onProgress(30, 'Анализ статусов...');

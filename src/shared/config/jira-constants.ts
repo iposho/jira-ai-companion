@@ -26,10 +26,21 @@ export const JIRA_CONSTANTS = {
     ]
 };
 
+// Форматирование значений для NOT IN: без кавычек, кроме значений с пробелами
+function formatStatusForNotIn(statuses: string[]): string {
+    return statuses.map(s => {
+        // Значения с пробелами или специальными символами - в кавычках
+        if (s.includes(' ') || s.includes('-')) {
+            return `"${s}"`;
+        }
+        return s;
+    }).join(', ');
+}
+
 export const JQL_SNIPPETS = {
-    ACTIVE_USERS_FILTER: `assignee in ("${JIRA_CONSTANTS.ACTIVE_USERS.join('", "')}")`,
-    STATUS_NOT_DONE: `status not in ("${JIRA_CONSTANTS.STATUS_EXCLUSIONS.join('", "')}")`,
+    ACTIVE_USERS_FILTER: `assignee IN ("${JIRA_CONSTANTS.ACTIVE_USERS.join('", "')}")`,
+    STATUS_NOT_DONE: `status NOT IN (${formatStatusForNotIn(JIRA_CONSTANTS.STATUS_EXCLUSIONS)})`,
     IS_UNASSIGNED: 'assignee IS empty',
     IS_FRONTEND_TEAM: '"cf[10001]" = c6bf7c58-d853-474d-bbe6-ebe40bf41eb4',
-    IS_IN_REVIEW: `status in ("${JIRA_CONSTANTS.REVIEW_STATUSES.join('", "')}")`
+    IS_IN_REVIEW: `status IN ("${JIRA_CONSTANTS.REVIEW_STATUSES.join('", "')}")`
 };

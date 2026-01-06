@@ -26,7 +26,7 @@ export async function GET() {
 
     try {
         // Get all active issues for the team
-        const jql = `project = "${projectKey}" AND assignee in ("${users.join('", "')}") AND updated >= -90d ORDER BY updated DESC`;
+        const jql = `project = ${projectKey} AND assignee IN ("${users.join('", "')}") AND updated >= -90d ORDER BY updated DESC`;
         const issues = await getAllIssues(jql);
 
         // === Status Distribution ===

@@ -1,36 +1,60 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { ReportFilters } from '../model/report-types';
 import { JIRA_CONSTANTS } from '@/shared/config/jira-constants';
 
 interface ReportFiltersModalProps {
     isOpen: boolean;
     reportTitle: string;
+    reportType?: 'daily' | 'weekly' | 'time' | 'planning';
     onClose: () => void;
     onConfirm: (filters: ReportFilters) => void;
 }
 
-function getDefaultDates() {
+function getDefaultDates(reportType?: 'daily' | 'weekly' | 'time' | 'planning') {
     const today = new Date();
-    const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-    return {
-        dateTo: today.toISOString().split('T')[0],
-        dateFrom: thirtyDaysAgo.toISOString().split('T')[0],
-    };
+    today.setHours(0, 0, 0, 0);
+    
+    if (reportType === 'daily') {
+        // Вчерашний день
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        return {
+            dateFrom: yesterday.toISOString().split('T')[0],
+            dateTo: yesterday.toISOString().split('T')[0],
+        };
+    } else if (reportType === 'weekly' || reportType === 'time') {
+        // Неделя назад от текущей даты (первая дата - неделя назад)
+        const weekAgo = new Date(today);
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return {
+            dateFrom: weekAgo.toISOString().split('T')[0],
+            dateTo: today.toISOString().split('T')[0],
+        };
+    } else {
+        // По умолчанию - последние 30 дней
+        const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+        return {
+            dateTo: today.toISOString().split('T')[0],
+            dateFrom: thirtyDaysAgo.toISOString().split('T')[0],
+        };
+    }
 }
 
 export function ReportFiltersModal({
     isOpen,
     reportTitle,
+    reportType,
     onClose,
     onConfirm,
 }: ReportFiltersModalProps) {
-    const defaultDates = useMemo(() => getDefaultDates(), []);
+    // Инициализируем состояние с дефолтными значениями для текущего типа отчета
+    const defaultDates = getDefaultDates(reportType);
     const [dateFrom, setDateFrom] = useState(defaultDates.dateFrom);
     const [dateTo, setDateTo] = useState(defaultDates.dateTo);
     const [selectedUsers, setSelectedUsers] = useState<string[]>(JIRA_CONSTANTS.ACTIVE_USERS);
-    const [projectKey, setProjectKey] = useState(JIRA_CONSTANTS.PROJECT_KEY);
+    const [projectKey, setProjectKey] = useState<'DEV' | 'PRODUCT'>('DEV');
 
     const handleUserToggle = (user: string) => {
         setSelectedUsers((prev) =>
@@ -134,13 +158,14 @@ export function ReportFiltersModal({
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             📁 Проект
                         </label>
-                        <input
-                            type="text"
+                        <select
                             value={projectKey}
-                            onChange={(e) => setProjectKey(e.target.value.toUpperCase())}
-                            placeholder="DEV"
+                            onChange={(e) => setProjectKey(e.target.value as 'DEV' | 'PRODUCT')}
                             className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
+                        >
+                            <option value="DEV">DEV</option>
+                            <option value="PRODUCT">PRODUCT</option>
+                        </select>
                     </div>
                 </div>
 

@@ -12,6 +12,8 @@ module.exports = {
             env: {
                 NODE_ENV: 'production',
                 PORT: 5030,
+                URL: 'http://localhost:5030',
+                HOST: '192.168.10.16',
             },
             env_development: {
                 NODE_ENV: 'development',

@@ -13,20 +13,34 @@ export async function generateTimeReport(
     const projectKey = filters?.projectKey || JIRA_CONSTANTS.PROJECT_KEY;
     const jiraHost = process.env.JIRA_HOST?.replace(/\/$/, '');
 
-    // Default to last 30 days
-    const from = filters?.dateFrom ? new Date(filters.dateFrom) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const to = filters?.dateTo ? new Date(filters.dateTo) : new Date();
+    // Use filters dateFrom/dateTo if provided, otherwise use week ago (same as weekly report)
+    let from: Date;
+    let to: Date;
+    
+    if (filters?.dateFrom) {
+        from = new Date(filters.dateFrom);
+        from.setHours(0, 0, 0, 0);
+        to = filters?.dateTo ? new Date(filters.dateTo) : new Date();
+        to.setHours(23, 59, 59, 999);
+    } else {
+        // Default: week ago
+        from = new Date();
+        from.setDate(from.getDate() - 7);
+        from.setHours(0, 0, 0, 0);
+        to = new Date();
+        to.setHours(23, 59, 59, 999);
+    }
 
     onProgress(10, 'Загрузка задач...');
 
-    const jql = `project = ${projectKey} AND assignee in ("${users.join('", "')}") AND worklogDate >= "${from.toISOString().split('T')[0]}"`;
+    const jql = `project = ${projectKey} AND assignee IN ("${users.join('", "')}") AND worklogDate >= "${from.toISOString().split('T')[0]}"`;
 
     let tasks;
     try {
         tasks = await getAllIssues(jql);
     } catch {
         // Fallback if worklogDate doesn't work
-        const fallbackJql = `project = ${projectKey} AND assignee in ("${users.join('", "')}")`;
+        const fallbackJql = `project = ${projectKey} AND assignee IN ("${users.join('", "')}")`;
         tasks = await getAllIssues(fallbackJql);
     }
 

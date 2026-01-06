@@ -2,15 +2,28 @@ import { StatTile } from "@/widgets/dashboard/ui/stat-tile";
 import { StatusDistributionChart } from "@/widgets/dashboard/ui/status-distribution-chart";
 import { ThroughputChart } from "@/widgets/dashboard/ui/throughput-chart";
 
+export const dynamic = 'force-dynamic';
+
 async function getStats() {
   try {
-    const baseUrl = process.env.URL || 'http://localhost:3000';
+    // В серверных компонентах Next.js для внутренних запросов используем localhost
+    // с портом из переменной окружения PORT
+    const port = process.env.PORT || '3000';
+    const baseUrl = `http://localhost:${port}`;
+    
     const res = await fetch(`${baseUrl}/api/stats`, {
       cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
-    if (!res.ok) return { count: 0, error: true };
+    if (!res.ok) {
+      console.error(`Failed to fetch stats: ${res.status} ${res.statusText}`);
+      return { count: 0, error: true };
+    }
     return res.json();
-  } catch {
+  } catch (error) {
+    console.error('Error fetching stats:', error);
     return { count: 0, error: true };
   }
 }
